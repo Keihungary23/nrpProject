@@ -8,7 +8,9 @@ from sentence_transformers import SentenceTransformer
 app = FastAPI()
 
 # モデル初期化
-summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+# summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+summarizer = pipeline("summarization", model="sshleifer/distilbart-cnn-12-6")
+
 kw_model = KeyBERT(model=SentenceTransformer('all-MiniLM-L6-v2'))
 
 class InputText(BaseModel):

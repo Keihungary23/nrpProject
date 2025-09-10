@@ -19,7 +19,8 @@ if uploaded_file:
     # --- 要約処理 ---
     text = extract_text_from_pdf(pdf_path)
     chunks = chunk_text(text)
-    summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+    # summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+    summarizer = pipeline("summarization", model="sshleifer/distilbart-cnn-12-6")
     chunk_summaries = summarize_chunks(chunks, summarizer)
     section_summaries = summarize_sections(chunk_summaries, summarizer)
     keywords_per_section = extract_keywords(section_summaries)
