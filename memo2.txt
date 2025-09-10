@@ -1,0 +1,113 @@
+いい選択です！✨
+「研究論文サマライザー（要約＋キーワード抽出）」は実用性も高いし、院試＋AI系パートタイム両方のアピールに効きます。
+
+では、数時間で完成できる **最小構成プロジェクトの設計図** をまとめます。
+
+---
+
+## 🏗️ プロジェクト構成
+
+### 1. 論文PDFのテキスト抽出
+
+* ライブラリ例:
+
+  * `PyPDF2` / `pdfplumber` → PDFから本文抽出
+  * （arXiv論文ならLaTeX由来で比較的きれいに取れる）
+
+### 2. 要約
+
+* Hugging Faceの要約モデルを利用
+
+  * 軽量なら `sshleifer/distilbart-cnn-12-6`
+  * 日本語論文なら `sonoisa/t5-base-japanese` 系列
+* 出力を「3行以内」に制御
+
+### 3. キーワード抽出
+
+* `keybert` が最も簡単
+
+  * BERTベースでキーワード候補を抽出
+* 日本語なら `keybert` + `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`
+
+### 4. UI（任意）
+
+* CLI（コマンドライン）で十分だけど、見せるなら
+
+  * `Streamlit` を使えばPDFアップロード → 要約＋キーワード表示がすぐ作れる
+
+---
+
+## ⏱️ 時間配分（目安）
+
+1. PDF読み込み（30分）
+2. 要約パート（1時間）
+3. キーワード抽出（30分）
+4. UI or ノートブック整備（1時間）
+
+合計 **2〜3時間** で動くものが作れます。
+
+---
+
+## 💻 サンプルコード（骨組み）
+
+```python
+# 必要ライブラリ
+# pip install transformers keybert pdfplumber sentence-transformers
+
+import pdfplumber
+from transformers import pipeline
+from keybert import KeyBERT
+from sentence_transformers import SentenceTransformer
+
+# 1. PDFからテキスト抽出
+def extract_text_from_pdf(pdf_path):
+    text = ""
+    with pdfplumber.open(pdf_path) as pdf:
+        for page in pdf.pages:
+            text += page.extract_text() + "\n"
+    return text
+
+# 2. 要約モデル（英語例: distilbart）
+summarizer = pipeline("summarization", model="sshleifer/distilbart-cnn-12-6")
+
+def summarize_text(text, max_len=130, min_len=30):
+    summary = summarizer(text, max_length=max_len, min_length=min_len, do_sample=False)
+    return summary[0]['summary_text']
+
+# 3. キーワード抽出
+kw_model = KeyBERT(model=SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2'))
+
+def extract_keywords(text, top_n=5):
+    return kw_model.extract_keywords(text, top_n=top_n)
+
+# 実行例
+pdf_path = "sample_paper.pdf"
+text = extract_text_from_pdf(pdf_path)
+
+summary = summarize_text(text)
+keywords = extract_keywords(text)
+
+print("=== 要約 ===")
+print(summary)
+print("\n=== キーワード ===")
+print(keywords)
+```
+
+---
+
+## 📌 アピールの仕方
+
+* 「研究論文の情報整理を自動化するツールを作成」
+* 「自然言語処理（要約・キーワード抽出）＋PDF処理＋UI実装を経験」
+* GitHubに載せるときは README に以下を載せると強い：
+
+  * プロジェクト目的
+  * 使い方（スクショ）
+  * 使用技術（NLPモデル、ライブラリ名）
+
+---
+
+👉 ここで質問ですが、
+
+* 論文は **英語中心** ですか？それとも **日本語論文** が多そうですか？
+  （使うモデルを変える必要があるので、そこに合わせた具体例を出せます！）

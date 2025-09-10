@@ -1,0 +1,82 @@
+素晴らしい判断です！👏
+最初は **最低限のUI（HTML＋JS）** で機能を確認して、あとからBootstrapやCSSで整える流れが一番効率的です。
+
+---
+
+## 🏗️ 最小構成のフロント（Lolipop側）
+
+以下は **テキストを入力 → Hugging Face Spaces APIに送信 → 要約とキーワードを表示** するシンプルなHTML＋JS例です。
+
+（※ここでは仮に Hugging Face Spaces 側が `FastAPI` で `/summarize` エンドポイントを提供している前提です）
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Research Paper Summarizer</title>
+</head>
+<body>
+  <h1>📄 Research Paper Summarizer</h1>
+
+  <textarea id="inputText" rows="10" cols="60" placeholder="Paste your paper text here"></textarea><br>
+  <button onclick="summarize()">Summarize</button>
+
+  <h2>Summary</h2>
+  <p id="summary"></p>
+
+  <h2>Keywords</h2>
+  <ul id="keywords"></ul>
+
+  <script>
+    async function summarize() {
+      const text = document.getElementById("inputText").value;
+      const response = await fetch("https://huggingface.co/spaces/YOUR_USERNAME/YOUR_APP/summarize", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({text: text})
+      });
+
+      if (!response.ok) {
+        document.getElementById("summary").innerText = "Error: " + response.status;
+        return;
+      }
+
+      const result = await response.json();
+      document.getElementById("summary").innerText = result.summary;
+      document.getElementById("keywords").innerHTML = 
+        result.keywords.map(k => `<li>${k}</li>`).join("");
+    }
+  </script>
+</body>
+</html>
+```
+
+---
+
+## ✅ この構成でできること
+
+1. **Lolipop（フロント）**
+
+   * ユーザーは自分のドメインでアクセス可能
+   * 入力フォームやUIを自由に調整可能
+
+2. **Hugging Face Spaces（バックエンド）**
+
+   * NLP処理（要約＋キーワード抽出）を担当
+   * フロントからAPIを呼び出されて結果を返す
+
+---
+
+## 🚀 次のステップ
+
+1. Hugging Face Spaces に FastAPI バックエンドをデプロイ
+2. 上の HTML を Lolipop に置く
+3. API のURLを差し替えて接続確認
+4. 最後に CSS / Bootstrap / Tailwind で見た目を整える
+
+---
+
+👉 ここで確認したいのですが、
+Hugging Face Spaces のバックエンドは **Gradio/Streamlitで直接UIを作る形** にしますか？
+それとも **FastAPIで純粋なAPIサーバー** にしますか？
